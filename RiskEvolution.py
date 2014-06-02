@@ -3,11 +3,12 @@ import numpy as np
 
 ## The purpose of this program is to evaluate how the holding period of a risky
 ## asset, such as a stock mutual fund, with reinvestment of dividends affects
-## the risk (std deviation) of the annualized cumulative return (as defined in
-## http://en.wikipedia.org/wiki/Rate_of_return#Geometric_average_rate_of_return).
+## the risk as defined by the std deviation of the annualized cumulative return
+## (http://en.wikipedia.org/wiki/Rate_of_return#Geometric_average_rate_of_return),
+## and risk as defined by negative total returns.
 ## Monte-Carlo simulation is used to demonstrate that extended holding periods
-## indeed decrease the risk as measured by the annualized cumulative rate
-## (geometric average rate).
+## increase the annualized cumulative rate of return (geometric average rate),
+## but lead to a higher probability of large negative returns!
 
 
 ## Edit these parameters all you like... within reason!
@@ -23,7 +24,11 @@ num = 500000   # the number of different random outcomes to simulate
 
 ## Editing these lines may cause loss of functionality!
 
-final = np.ones((num,len(years)))   # initialize the final data array
+years.sort()
+
+finalRate = np.ones((num,len(years)))   # initialize the final data arrays
+finalReturn = np.ones((num,len(years)))
+
 
 for index in range(len(years)):
     #print index
@@ -34,17 +39,35 @@ for index in range(len(years)):
         #print '\t\t' + str(temp[0])
         holder = np.multiply(holder,np.add(temp,1))   # evolve the total return by one year
         #print '\t\t\t' + str(holder[0])
-    final[:,index] = np.power(holder,1./float(years[index]))   # annualize data, store in final array
 
-final = np.subtract(final,1.)
-final = np.multiply(final,100.)
-plt.hist((final[:,0],final[:,1],final[:,2]),bins=200,histtype='step',normed=True,label=(str(years[0]) + ' years',str(years[1]) + ' years',str(years[2]) + ' years' ))
-plt.title('Annualized Cumulative Return vs Holding Period')
+    holder = np.multiply(holder,pow(1.02,float(years[-1] - step - 1)))   # finish investment with risk-free asset
+
+    finalRate[:,index] = np.power(holder,1./float(years[-1]))   # annualize data, store in final array
+    finalReturn[:,index] = np.subtract(holder,1)   # store data in final array
+
+finalRate = np.subtract(finalRate,1.)
+finalRate = np.multiply(finalRate,100.)
+
+finalReturn = np.multiply(finalReturn,100)
+
+plt.figure(1)
+plt.hist((finalRate[:,0],finalRate[:,1],finalRate[:,2]),bins=1000,histtype='step',normed=True,label=(str(years[0]) + ' years',str(years[1]) + ' years',str(years[2]) + ' years' ))
+plt.title('Annualized Rate vs Risky Asset Holding Period')
 plt.xlabel('Anualized Cumulative Return [%]')
 plt.ylabel('Probability')
-plt.xlim(-50,60)
+plt.xlim(-5,20)
 plt.legend()
-plt.text(-40,0.08,'$\mu=$' + str(100*mu) + '$\% ,\ \sigma=$' + str(100*sigma) + '$\%$') 
+#plt.text(-20,0.06,'$\mu=$' + str(100*mu)) #+ '$\% ,\ \sigma=$' + str(100*sigma) + '$\%$')
+plt.plot()
+
+plt.figure(2)
+plt.hist((finalReturn[:,0],finalReturn[:,1],finalReturn[:,2]),bins=5000,histtype='step',normed=True,label=(str(years[0]) + ' years',str(years[1]) + ' years',str(years[2]) + ' years' ))
+plt.title('Total Returns vs Risk Asset Holding Period')
+plt.xlabel('Total Return [%]')
+plt.ylabel('Probability')
+plt.xlim(-100,1000)
+plt.legend()
+plt.plot()
 plt.show()
 
 
