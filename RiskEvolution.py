@@ -9,6 +9,8 @@ import numpy as np
 ## Monte-Carlo simulation is used to demonstrate that extended holding periods
 ## increase the annualized cumulative rate of return (geometric average rate),
 ## but lead to a higher probability of large negative returns!
+## In this comparison, when the risky asset it held for only one year, the final
+## balance is invested in a risk-free asset for the remaining 19.
 
 
 ## Edit these parameters all you like... within reason!
